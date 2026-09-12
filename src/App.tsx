@@ -9,7 +9,7 @@ function App(){
   async function searchMovie() {
     setIsLoading(true)
     setError("")
-    // const apiKey= Your API key
+    const apiKey= '354c78e8'
     try {
       const response = await fetch(`http://www.omdbapi.com/?s=${searchInput}&apikey=${apiKey}`)
       if(!response.ok){
@@ -23,7 +23,7 @@ function App(){
       }
       console.log(data)
       setMovies(data.Search)
-    } catch (e) {
+    } catch (e: any) {
       console.error(e.message)
       setError(e.message)
     } finally{
