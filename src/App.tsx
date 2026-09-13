@@ -1,58 +1,63 @@
-import { useState } from "react"
+import React, { useState } from "react"
+import  { MovieList } from "./components/MovieList.js";
+import type {Movie} from "./components/MovieList.js"
+
+interface SearchResponse {
+  Search:Movie[];
+  Response:string;
+  Error?:string;
+
+}
 
 function App(){
-  const [searchInput , setSearchInput] = useState("");
-  const [movies , setMovies] = useState([])
-  const [isLoading , setIsLoading] = useState(false)
-  const [error , setError] = useState("")
+  const [searchInput , setSearchInput] = useState<string>("");
+  const [movies , setMovies] = useState<Movie[]>([])
+  const [isLoading , setIsLoading] = useState<boolean>(false)
+  const [error , setError] = useState<string>("")
+
 
   async function searchMovie() {
+  if(!searchInput.trim()){
+    setError("Movie not found")
+    return
+  }
     setIsLoading(true)
     setError("")
-    const apiKey= '354c78e8'
     try {
+      const apiKey= '354c78e8'
       const response = await fetch(`http://www.omdbapi.com/?s=${searchInput}&apikey=${apiKey}`)
       if(!response.ok){
         throw new Error(`http status error ${response.status}`)
       }
-      const data = await response.json()
+      const data:SearchResponse = await response.json()
       
-      if(data.Response  === "False"){
-        setError(data.Error)
+      if(data.Response  === "False" ){
+        setError(data.Error || "Something went wrong")
         return;
       }
-      console.log(data)
+      
       setMovies(data.Search)
     } catch (e: any) {
-      console.error(e.message)
-      setError(e.message)
+      if(e instanceof Error){
+        setError(e.message)
+      }
     } finally{
       setIsLoading(false)
     }
-   
+
   }
-     const movieList = movies.map((movie) => {
-        return(
-          <div key={movie.imdbID}>
-            <img src={movie.Poster}/>
-            <h2>{movie.Title}</h2>
-            <p>{movie.Year}</p>
-            <p>{movie.Type}</p>
-          </div>
-        )
-      });
 
   return(
     <div >
       <h1>Search Your Movie</h1>
-      <input value={searchInput}
+      <input className="px-2 py-2  border-2 border-black" value={searchInput}
        type="text"
        placeholder="search your movie"
-       onChange={(e) => setSearchInput(e.target.value)} />
+       onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchInput(e.target.value)} />
        <button onClick={searchMovie}>search</button>
         <p>{isLoading ? "loading..." : ""}</p>
-       <div>{movieList}</div>    
-        {error && <p>{error}</p>}
+       <div><MovieList movies={movies}  /></div>    
+        {error && <p className="text-red-500">{error}</p>}
     </div>
   )
 }
